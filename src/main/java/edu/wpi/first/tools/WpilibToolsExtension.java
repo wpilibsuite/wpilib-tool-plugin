@@ -1,28 +1,35 @@
 package edu.wpi.first.tools;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 
 public class WpilibToolsExtension {
+    private final Project project;
     private final Set<Configuration> configurations;
     private final TaskProvider<ExtractConfiguration> extractConfigTask;
     private final TaskProvider<FixupNativeResources> fixupTask;
     private final TaskProvider<HashNativeResources> hashTask;
-    private final TaskProvider<AssmebleNativeResources> assembleTask;
+    private final TaskProvider<AssembleNativeResources> assembleTask;
     private final PlatformMapper platformMapper;
     private final NativeConfigurator nativeConfigurator;
     private final JavaFxHelpers javaFxHelpers;
 
     @Inject
-    public WpilibToolsExtension(TaskProvider<ExtractConfiguration> extractConfigTask,
+    public WpilibToolsExtension(Project project,
+        TaskProvider<ExtractConfiguration> extractConfigTask,
         TaskProvider<FixupNativeResources> fixupTask,
         TaskProvider<HashNativeResources> hashTask,
-        TaskProvider<AssmebleNativeResources> assembleTask) {
+        TaskProvider<AssembleNativeResources> assembleTask) {
+        this.project = project;
         this.extractConfigTask = extractConfigTask;
         this.fixupTask = fixupTask;
         this.hashTask = hashTask;
@@ -34,7 +41,18 @@ public class WpilibToolsExtension {
         configurations = new HashSet<>();
     }
 
-    public void addConfiguration(Configuration configuration) {
+    public void createNativeConfigurations() {
+        configurations.add(nativeConfigurator.createNativeConfiguration(project));
+    }
+
+    public void addNativeResourcesToSourceSet(SourceSet sourceSet) {
+        Map<String, Object> map = new HashMap<>();
+        TaskProvider<AssembleNativeResources> resourcesTask = getAssembleResourcesTask();
+        map.put("builtBy", resourcesTask);
+        sourceSet.getOutput().dir(map, resourcesTask);
+    }
+
+    public void addExtraNativeResourceConfiguration(Configuration configuration) {
         configurations.add(configuration);
     }
 
@@ -54,7 +72,7 @@ public class WpilibToolsExtension {
         return hashTask;
     }
 
-    public TaskProvider<AssmebleNativeResources> getAssembleResourcesTask() {
+    public TaskProvider<AssembleNativeResources> getAssembleResourcesTask() {
         return assembleTask;
     }
 

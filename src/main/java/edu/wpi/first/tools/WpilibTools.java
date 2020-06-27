@@ -36,9 +36,9 @@ public class WpilibTools implements Plugin<Project> {
             hash.getInputDirectory().set(fixupTask.get().getOutputDirectory());
         });
 
-        TaskProvider<AssmebleNativeResources> assembleResourcesTask = project.getTasks()
-                .register("assembleNativeResources", AssmebleNativeResources.class);
-        assembleResourcesTask.configure((AssmebleNativeResources copy) -> {
+        TaskProvider<AssembleNativeResources> assembleResourcesTask = project.getTasks()
+                .register("assembleNativeResources", AssembleNativeResources.class);
+        assembleResourcesTask.configure((AssembleNativeResources copy) -> {
             copy.from(fixupTask.get());
             copy.from(hashTask.get());
 
@@ -52,8 +52,6 @@ public class WpilibTools implements Plugin<Project> {
            transform.getTo().attribute(artifactType, DIRECTORY_TYPE);
         });
 
-        project.getExtensions().create("wpilibTools", WpilibToolsExtension.class, extractConfig, fixupTask, hashTask, assembleResourcesTask);
-
-        
+        project.getExtensions().create("wpilibTools", WpilibToolsExtension.class, project, extractConfig, fixupTask, hashTask, assembleResourcesTask);        
     }
 }

@@ -69,9 +69,6 @@ public class HashNativeResources extends DefaultTask {
             }
 
             Path path = inputPath.relativize(file.toPath());
-            System.out.println(path);
-            System.out.println(file);
-
 
             try (FileInputStream is = new FileInputStream(file)) {
                 while ((readBytes = is.read(buffer)) != -1) {
@@ -91,7 +88,6 @@ public class HashNativeResources extends DefaultTask {
                 archFiles.add(strPath);
                 platformMap.put(arch, archFiles);
                 platforms.put(platform, platformMap);
-                System.out.println("Added map");
             } else {
                 List<String> archFiles = platformMap.get(arch);
                 if (archFiles == null) {

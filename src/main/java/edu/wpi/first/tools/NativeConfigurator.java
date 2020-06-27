@@ -1,7 +1,5 @@
 package edu.wpi.first.tools;
 
-import java.util.function.Function;
-
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
