@@ -2,6 +2,8 @@
 
 #include <jni.h>
 
+extern "C" {
+
 /*
  * Class:     edu_wpi_first_wpiutil_WPIUtilJNI
  * Method:    addDllSearchDirectory
@@ -14,4 +16,6 @@ JNIEXPORT jboolean JNICALL Java_edu_wpi_first_wpiutil_CombinedRuntimeLoader_addD
     BOOL retVal = SetDllDirectoryW((PCWCHAR)dirStr);
     env->ReleaseStringChars(directory, dirStr);
     return retVal;
+}
+
 }
