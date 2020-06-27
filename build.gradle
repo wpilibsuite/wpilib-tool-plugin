@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'edu.wpi.first'
-version '0.1.0'
+version '0.2.0'
 
 if (project.hasProperty('publishVersion')) {
     version = project.publishVersion
@@ -15,6 +15,21 @@ compileJava {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 }
+
+def generateNativeResources = tasks.register("generateNativeResources", Copy) {
+    into "$buildDir/assembledResources"
+
+    from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86")) {
+        include "**/*.dll"
+        into "/x86"
+    }
+    from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86-64")) {
+        include "**/*.dll"
+        into "/x86-64"
+    }
+}
+
+sourceSets.main.output.dir generateNativeResources, builtBy: generateNativeResources
 
 pluginBundle {
     website = 'https://github.com/wpilibsuite/wpilib-tool-plugin'

@@ -1,0 +1,23 @@
+plugins {
+    // Apply the cpp-library plugin to add support for building CPP libraries
+    id 'cpp-library'
+}
+
+String base = org.gradle.internal.jvm.Jvm.current().getJavaHome().toString() + "/include";
+String extra = base.concat("/win32").toString()
+
+
+library {
+    targetMachines.add(machines.windows.x86_64)
+    targetMachines.add(machines.windows.x86)
+
+    publicHeaders.from file(base)
+    publicHeaders.from file(extra)
+}
+
+library {
+    binaries.configureEach(CppSharedLibrary) {
+        linkTask.get().debuggable.set(false)
+        compileTask.get().compilerArgs.add("-MD")
+    }
+}

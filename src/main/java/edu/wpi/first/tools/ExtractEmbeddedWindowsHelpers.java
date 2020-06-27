@@ -41,9 +41,9 @@ public class ExtractEmbeddedWindowsHelpers extends DefaultTask {
     public void extract() throws IOException {
         File resolvedFile = outputFile.getAsFile().get();
 
-        String streamFileName = "/WindowsLoaderHelper.dll.64";
+        String streamFileName = "/x86-64/WindowsLoaderHelper.dll";
         if (is32BitIntel()) {
-            streamFileName = "/WindowsLoaderHelper.dll.32";
+            streamFileName = "/x86/WindowsLoaderHelper.dll";
         }
         
         try (InputStream is = ExtractEmbeddedWindowsHelpers.class.getResourceAsStream(streamFileName)) {
