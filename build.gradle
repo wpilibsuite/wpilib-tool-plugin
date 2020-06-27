@@ -1,0 +1,45 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id "com.gradle.plugin-publish" version "0.12.0"
+}
+
+group 'edu.wpi.first'
+version '0.1.0'
+
+if (project.hasProperty('publishVersion')) {
+    version = project.publishVersion
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+pluginBundle {
+    website = 'https://github.com/wpilibsuite/wpilib-tool-plugin'
+    vcsUrl = 'https://github.com/wpilibsuite/wpilib-tool-plugin'
+    description = 'This plugin provides easy to use JNI support for gradle.'
+    tags = ['groovy', 'jni', 'utils', 'maven', 'frc', 'wpilib']
+
+    plugins {
+        WpilibTools {
+            id = 'edu.wpi.first.WpilibTools'
+            displayName = 'WPILib Gradle Tool Plugin'
+        }
+    }
+}
+
+gradlePlugin {
+    plugins {
+        WpilibTools {
+            id = 'edu.wpi.first.WpilibTools'
+            implementationClass = 'edu.wpi.first.tools.WpilibTools'
+        }
+    }
+}
+
+
+wrapper {
+    gradleVersion = '6.0'
+}
