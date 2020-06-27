@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem;
+
 plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
@@ -16,20 +18,22 @@ compileJava {
     targetCompatibility = 1.8
 }
 
-def generateNativeResources = tasks.register("generateNativeResources", Copy) {
-    into "$buildDir/assembledResources"
+if (OperatingSystem.current().isWindows()) {
+    def generateNativeResources = tasks.register("generateNativeResources", Copy) {
+        into "$buildDir/assembledResources"
 
-    from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86")) {
-        include "**/*.dll"
-        into "/x86"
+        from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86")) {
+            include "**/*.dll"
+            into "/x86"
+        }
+        from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86-64")) {
+            include "**/*.dll"
+            into "/x86-64"
+        }
     }
-    from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86-64")) {
-        include "**/*.dll"
-        into "/x86-64"
-    }
+
+    sourceSets.main.output.dir generateNativeResources, builtBy: generateNativeResources
 }
-
-sourceSets.main.output.dir generateNativeResources, builtBy: generateNativeResources
 
 pluginBundle {
     website = 'https://github.com/wpilibsuite/wpilib-tool-plugin'
