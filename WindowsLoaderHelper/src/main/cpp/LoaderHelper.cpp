@@ -4,6 +4,12 @@
 
 extern "C" {
 
+
+BOOL WINAPI DllEntryPoint(HINSTANCE hinstDLL, DWORD fdwReason,
+        LPVOID lpReserved) {
+    return TRUE;
+}
+
 /*
  * Class:     edu_wpi_first_wpiutil_WPIUtilJNI
  * Method:    addDllSearchDirectory

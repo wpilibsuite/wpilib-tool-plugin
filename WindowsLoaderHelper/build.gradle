@@ -18,6 +18,9 @@ library {
 library {
     binaries.configureEach(CppSharedLibrary) {
         linkTask.get().debuggable.set(false)
-        compileTask.get().compilerArgs.add("-MD")
+        linkTask.get().linkerArgs.add("/NODEFAULTLIB")
+        linkTask.get().linkerArgs.add("KERNEL32.LIB")
+        linkTask.get().linkerArgs.add("/ENTRY:DllEntryPoint")
+        linkTask.get().linkerArgs.add("/INCREMENTAL:NO")
     }
 }
