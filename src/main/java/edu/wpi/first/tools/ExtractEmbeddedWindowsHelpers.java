@@ -17,7 +17,7 @@ import org.gradle.api.tasks.TaskAction;
 public class ExtractEmbeddedWindowsHelpers extends DefaultTask {
     private final RegularFileProperty outputFile;
 
-    @OutputFile 
+    @OutputFile
     public RegularFileProperty getOutputFile() {
         return outputFile;
     }
@@ -32,7 +32,7 @@ public class ExtractEmbeddedWindowsHelpers extends DefaultTask {
         setDescription("Extracts the native windows helper libraries");
     }
 
-    private static boolean is32BitIntel() {
+    public static boolean is32BitIntel() {
         String arch = System.getProperty("os.arch");
         return "x86".equals(arch) || "i386".equals(arch);
     }
@@ -45,7 +45,7 @@ public class ExtractEmbeddedWindowsHelpers extends DefaultTask {
         if (is32BitIntel()) {
             streamFileName = "/x86/WindowsLoaderHelper.dll";
         }
-        
+
         try (InputStream is = ExtractEmbeddedWindowsHelpers.class.getResourceAsStream(streamFileName)) {
             Files.copy(is, resolvedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }

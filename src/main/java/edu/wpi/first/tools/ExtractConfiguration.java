@@ -81,11 +81,14 @@ public class ExtractConfiguration extends Copy {
 
         if (OperatingSystem.current().isWindows()) {
             TaskProvider<Task> extractTask = getProject().getRootProject().getTasks().named("extractEmbeddedWindowsHelpers");
-            
+
             dependsOn(extractTask);
             ExtractEmbeddedWindowsHelpers resolvedExtractTask = (ExtractEmbeddedWindowsHelpers)extractTask.get();
             from(resolvedExtractTask.getOutputFile(), (CopySpec copy) -> {
                 String arch = "x86-64";
+                if (ExtractEmbeddedWindowsHelpers.is32BitIntel()) {
+                    arch = "x86";
+                }
                 copy.into("/windows/" + arch + "/shared");
             });
         }
