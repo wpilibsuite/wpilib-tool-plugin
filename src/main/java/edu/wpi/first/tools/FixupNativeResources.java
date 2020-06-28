@@ -3,6 +3,7 @@ package edu.wpi.first.tools;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
+import java.util.Scanner;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -72,19 +73,9 @@ public class FixupNativeResources extends DefaultTask {
             // Set rpath correctly in all binaries
             Directory directory = outputDirectory.get();
 
-            List<File> allFilesList = new ArrayList<>();
-            List<String> fileNameList = new ArrayList<>();
-            for (File file : directory.getAsFileTree()) {
-                if (!file.isFile()) {
-                    continue;
-                }
-                allFilesList.add(file);
-                fileNameList.add(file.getName());
-            }
-
             List<String> filesToFixup = new ArrayList<>();
 
-            for (File file : allFilesList) {
+            for (File file : directory.getAsFileTree()) {
 
                 // Get list of all dependent binaries
                 ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
@@ -99,24 +90,35 @@ public class FixupNativeResources extends DefaultTask {
                 String outputStr = standardOutput.toString();
                 String currentFileName = file.getName();
 
-                // See if any extracted files exist in deps list
-                for (String lookupFile : fileNameList) {
-                    if (lookupFile.equals(currentFileName)) {
-                        continue;
-                    }
+                // Search dependencies list, look for any non absolute path resolved libraries
+                try (Scanner stringScanner = new Scanner(outputStr)) {
+                    String currentLine = null;
+                    while (stringScanner.hasNextLine()) {
+                        currentLine = stringScanner.nextLine();
+                        if (currentLine.contains(currentFileName)) {
+                            continue;
+                        }
 
-                    if (outputStr.contains(lookupFile)) {
-                        filesToFixup.add(lookupFile);
+                        String trimmedLine = currentLine.trim();
+
+                        if (trimmedLine.startsWith("/")) {
+                            continue;
+                        }
+
+                        String libName = trimmedLine.split(" ")[0];
+                        filesToFixup.add(libName);
                     }
                 }
 
                 // Fixup any dependencies
                 for (String fixupFile : filesToFixup) {
                     project.exec((ex) -> {
-                        ex.commandLine("install_name_tool", "-change", fixupFile, "@loader_path/" + fixupFile, file.toString());
+                        ex.commandLine("install_name_tool", "-change", fixupFile, "@loader_path/" + fixupFile,
+                                file.toString());
                     });
                 }
             }
         }
     }
+
 }
