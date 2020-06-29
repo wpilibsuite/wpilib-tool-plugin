@@ -17,6 +17,7 @@ library {
 
 library {
     binaries.configureEach(CppSharedLibrary) {
+        compileTask.get().compilerArgs.add("/GS-")
         linkTask.get().debuggable.set(false)
         linkTask.get().linkerArgs.add("/NODEFAULTLIB")
         linkTask.get().linkerArgs.add("KERNEL32.LIB")

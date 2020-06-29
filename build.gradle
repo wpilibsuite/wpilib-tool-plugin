@@ -21,6 +21,7 @@ compileJava {
 if (OperatingSystem.current().isWindows()) {
     def generateNativeResources = tasks.register("generateNativeResources", Copy) {
         into "$buildDir/assembledResources"
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
         from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86")) {
             include "**/*.dll"

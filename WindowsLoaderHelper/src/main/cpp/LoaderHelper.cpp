@@ -12,16 +12,27 @@ BOOL WINAPI DllEntryPoint(HINSTANCE hinstDLL, DWORD fdwReason,
 
 /*
  * Class:     edu_wpi_first_wpiutil_WPIUtilJNI
- * Method:    addDllSearchDirectory
- * Signature: (Ljava/lang/String;)V
+ * Method:    setDllDirectory
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jboolean JNICALL Java_edu_wpi_first_wpiutil_CombinedRuntimeLoader_addDllSearchDirectory
+JNIEXPORT jstring JNICALL Java_edu_wpi_first_wpiutil_CombinedRuntimeLoader_setDllDirectory
 (JNIEnv* env, jclass cls, jstring directory)
 {
+    WCHAR data[512];
+    DWORD dirLength = GetDllDirectoryW(512, data);
+
+    if (directory == NULL) {
+        goto end;
+    }
     const jchar* dirStr = env->GetStringChars(directory, NULL);
-    BOOL retVal = SetDllDirectoryW((PCWCHAR)dirStr);
+    SetDllDirectoryW((PCWCHAR)dirStr);
     env->ReleaseStringChars(directory, dirStr);
-    return retVal;
+    end:
+    if (dirLength > 0) {
+        return env->NewString((const jchar*)data, dirLength);
+    } else {
+        return NULL;
+    }
 }
 
 }
