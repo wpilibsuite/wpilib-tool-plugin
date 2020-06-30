@@ -26,7 +26,7 @@ import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 
-import groovy.json.JsonOutput;
+import com.google.gson.GsonBuilder;
 
 public class HashNativeResources extends DefaultTask {
     private final DirectoryProperty inputDirectory;
@@ -58,7 +58,7 @@ public class HashNativeResources extends DefaultTask {
 
         Path inputPath = directory.getAsFile().toPath();
 
-        Map<String, Object> platforms = new HashMap<>(); 
+        Map<String, Object> platforms = new HashMap<>();
 
         byte[] buffer = new byte[0xFFFF];
         int readBytes = 0;
@@ -100,10 +100,10 @@ public class HashNativeResources extends DefaultTask {
             }
         }
 
-        
-
         platforms.put("hash", EncodingGroovyMethods.encodeHex(hash.digest()).toString());
-        String json = JsonOutput.prettyPrint(JsonOutput.toJson(platforms));
-        Files.write(hashFile.get().getAsFile().toPath(), Arrays.asList(json), Charset.defaultCharset());
+        GsonBuilder builder = new GsonBuilder();
+        builder.setPrettyPrinting();
+        var json = builder.create().toJson(platforms);
+        Files.writeString(hashFile.get().getAsFile().toPath(), json, Charset.defaultCharset());
     }
 }
