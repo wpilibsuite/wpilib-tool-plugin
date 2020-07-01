@@ -14,8 +14,11 @@ import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Copy;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.os.OperatingSystem;
@@ -48,6 +51,13 @@ public class ExtractConfiguration extends Copy {
         return outputDirectory;
     }
 
+    private Property<Boolean> skipWindowsHelperLibrary;
+
+    @Input
+    public Property<Boolean> getSkipWindowsHelperLibrary() {
+        return skipWindowsHelperLibrary;
+    }
+
     @Inject
     public ExtractConfiguration() {
         WpilibToolsExtension extension = getProject().getExtensions().getByType(WpilibToolsExtension.class);
@@ -55,6 +65,10 @@ public class ExtractConfiguration extends Copy {
         outputDirectory = getProject().getObjects().directoryProperty();
 
         outputDirectory.set(getProject().getLayout().getBuildDirectory().dir("RawRuntimeLibs"));
+
+        skipWindowsHelperLibrary = getProject().getObjects().property(Boolean.class);
+
+        skipWindowsHelperLibrary.set(false);
 
         getOutputs().dir(outputDirectory);
 
@@ -89,6 +103,16 @@ public class ExtractConfiguration extends Copy {
                 if (ExtractEmbeddedWindowsHelpers.is32BitIntel()) {
                     arch = "x86";
                 }
+                copy.eachFile(new Action<FileCopyDetails>() {
+
+                    @Override
+                    public void execute(FileCopyDetails file) {
+                        if (getSkipWindowsHelperLibrary().getOrElse(false)) {
+                            file.exclude();
+                        }
+                    }
+
+                });
                 copy.into("/windows/" + arch + "/shared");
             });
         }
