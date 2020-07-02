@@ -1,6 +1,8 @@
 package edu.wpi.first.tools;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -48,7 +50,7 @@ public class ExtractConfiguration extends Copy {
 
     private DirectoryProperty outputDirectory;
 
-    private Set<Configuration> configurations;
+    private List<String> configurations;
 
     @OutputDirectory
     public DirectoryProperty getOutputDirectory() {
@@ -62,8 +64,8 @@ public class ExtractConfiguration extends Copy {
         return skipWindowsHelperLibrary;
     }
 
-    //@Input
-    public Set<Configuration> getConfigurations() {
+    @Input
+    public List<String> getConfigurations() {
         return configurations;
     }
 
@@ -77,7 +79,7 @@ public class ExtractConfiguration extends Copy {
 
         skipWindowsHelperLibrary.set(false);
 
-        configurations = new HashSet<>();
+        configurations = new ArrayList<>();
 
         getOutputs().dir(outputDirectory);
 
@@ -88,8 +90,9 @@ public class ExtractConfiguration extends Copy {
             @Override
             public FileCollection call() {
                 FileCollection collection = null;
-                for (Configuration config : configurations) {
-                    ArtifactView view = config.getIncoming().artifactView(viewAction);
+                var cfgs = getProject().getConfigurations();
+                for (String config : configurations) {
+                    ArtifactView view = cfgs.getByName(config).getIncoming().artifactView(viewAction);
                     FileCollection localCollection = view.getFiles();
                     if (collection == null) {
                         collection = localCollection;

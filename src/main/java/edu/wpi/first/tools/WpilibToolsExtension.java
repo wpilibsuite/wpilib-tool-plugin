@@ -12,65 +12,32 @@ import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 
 public class WpilibToolsExtension {
     private final Project project;
-    private final TaskProvider<ExtractConfiguration> extractConfigTask;
-    private final TaskProvider<FixupNativeResources> fixupTask;
-    private final TaskProvider<HashNativeResources> hashTask;
-    private final TaskProvider<AssembleNativeResources> assembleTask;
     private final PlatformMapper platformMapper;
     private final NativeConfigurator nativeConfigurator;
-    private final JavaFxHelpers javaFxHelpers;
 
     @Inject
-    public WpilibToolsExtension(Project project,
-        TaskProvider<ExtractConfiguration> extractConfigTask,
-        TaskProvider<FixupNativeResources> fixupTask,
-        TaskProvider<HashNativeResources> hashTask,
-        TaskProvider<AssembleNativeResources> assembleTask) {
+    public WpilibToolsExtension(Project project) {
         this.project = project;
-        this.extractConfigTask = extractConfigTask;
-        this.fixupTask = fixupTask;
-        this.hashTask = hashTask;
-        this.assembleTask = assembleTask;
         this.platformMapper = new PlatformMapper();
-        this.nativeConfigurator = new NativeConfigurator(platformMapper);
-        this.javaFxHelpers = new JavaFxHelpers(platformMapper);
-
+        this.nativeConfigurator = new NativeConfigurator(platformMapper, project.getDependencies());
     }
 
-    public void createNativeConfigurations() {
-        var cfg = nativeConfigurator.createNativeConfiguration(project);
-        this.extractConfigTask.configure(c -> {
-            c.getConfigurations().add(cfg);
-        });
-    }
+    // public void createNativeConfigurations() {
+    //     var cfg = nativeConfigurator.createNativeConfiguration(project);
+    //     this.extractConfigTask.configure(c -> {
+    //         c.getConfigurations().add(cfg);
+    //     });
+    // }
 
 
     public void addNativeResourcesToSourceSet(SourceSet sourceSet) {
-        Map<String, Object> map = new HashMap<>();
-        TaskProvider<AssembleNativeResources> resourcesTask = getAssembleResourcesTask();
-        map.put("builtBy", resourcesTask);
-        sourceSet.getOutput().dir(map, resourcesTask);
-    }
 
-    public TaskProvider<ExtractConfiguration> getExtractConfigurationTask() {
-        return extractConfigTask;
-    }
-
-    public TaskProvider<FixupNativeResources> getFixupResourcesTask() {
-        return fixupTask;
-    }
-
-    public TaskProvider<HashNativeResources> getHashResourcesTask() {
-        return hashTask;
-    }
-
-    public TaskProvider<AssembleNativeResources> getAssembleResourcesTask() {
-        return assembleTask;
     }
 
     public PlatformMapper getPlatformMapper() {
@@ -81,14 +48,14 @@ public class WpilibToolsExtension {
         return nativeConfigurator;
     }
 
-    public JavaFxHelpers getJavaFx() {
-        return javaFxHelpers;
+    public NativePlatforms getCurrentPlatform() {
+        return platformMapper.getCurrentPlatform();
     }
 
     public class NewTaskSetConfiguration {
         public String taskPostfix;
         public String configurationName;
-        public String rootTaskFolder;
+        public DirectoryProperty rootTaskFolder;
         public String resourceFileName;
     }
 
@@ -97,43 +64,53 @@ public class WpilibToolsExtension {
         public TaskProvider<FixupNativeResources> fixup;
         public TaskProvider<HashNativeResources> hash;
         public TaskProvider<AssembleNativeResources> assemble;
+
+        public void addToSourceSetResources(SourceSet sourceSet) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("builtBy", assemble);
+            sourceSet.getOutput().dir(map, assemble);
+        }
     }
 
-    public NewTaskSet createNewNativeExtractionConfiguration(Action<NewTaskSetConfiguration> configuration) {
+    public NewTaskSet createExtractionTasks(Action<NewTaskSetConfiguration> configuration) {
         NewTaskSetConfiguration newConfig = new NewTaskSetConfiguration();
+        newConfig.rootTaskFolder = project.getObjects().directoryProperty();
         configuration.execute(newConfig);
 
-        Objects.requireNonNull(newConfig.taskPostfix);
-        Objects.requireNonNull(newConfig.configurationName);
-        Objects.requireNonNull(newConfig.rootTaskFolder);
-        Objects.requireNonNull(newConfig.resourceFileName);
+        newConfig.taskPostfix = Objects.requireNonNullElse(newConfig.taskPostfix, "Main");
+        if (!newConfig.rootTaskFolder.isPresent()) {
+            newConfig.rootTaskFolder.set(project.getLayout().getBuildDirectory().dir("NativeMain"));
+        }
+        newConfig.resourceFileName = Objects.requireNonNullElse(newConfig.resourceFileName, "ResourceInformation.json");
 
         final NewTaskSet retSet = new NewTaskSet();
         retSet.extractConfiguration = project.getTasks().register("extractNativeConfiguration" + newConfig.taskPostfix, ExtractConfiguration.class);
         retSet.extractConfiguration.configure(c -> {
-            c.getConfigurations().add(project.getConfigurations().getByName(newConfig.configurationName));
-            c.getOutputDirectory().set(new File(newConfig.rootTaskFolder, "RawRuntimeLibs"));
+            if (newConfig.configurationName != null) {
+                c.getConfigurations().add(newConfig.configurationName);
+            }
+            c.getOutputDirectory().set(newConfig.rootTaskFolder.dir("RawRuntimeLibs"));
         });
 
         retSet.fixup = project.getTasks().register("fixupNativeResources" + newConfig.taskPostfix, FixupNativeResources.class);
         retSet.fixup.configure(c -> {
             c.dependsOn(retSet.extractConfiguration);
             c.getInputDirectory().set(retSet.extractConfiguration.get().getOutputDirectory());
-            c.getOutputDirectory().set(new File(newConfig.rootTaskFolder, "RuntimeLibs"));
+            c.getOutputDirectory().set(newConfig.rootTaskFolder.dir("RuntimeLibs"));
         });
 
         retSet.hash = project.getTasks().register("hashNativeResources" + newConfig.taskPostfix, HashNativeResources.class);
         retSet.hash.configure(c -> {
             c.dependsOn(retSet.fixup);
             c.getInputDirectory().set(retSet.fixup.get().getOutputDirectory());
-            c.getHashFile().set(new File(newConfig.rootTaskFolder, newConfig.resourceFileName));
+            c.getHashFile().set(newConfig.rootTaskFolder.file(newConfig.resourceFileName));
         });
 
         retSet.assemble = project.getTasks().register("assembleNativeResources" + newConfig.taskPostfix, AssembleNativeResources.class);
         retSet.assemble.configure(c -> {
             c.from(retSet.fixup.get());
             c.from(retSet.hash.get());
-            c.into(new File(newConfig.rootTaskFolder, "AssembledResources"));
+            c.into(newConfig.rootTaskFolder.dir("AssembledResources"));
         });
         return retSet;
     }
