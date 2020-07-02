@@ -2,6 +2,7 @@ package edu.wpi.first.tools;
 
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.DIRECTORY_TYPE;
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ZIP_TYPE;
+import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.JAR_TYPE;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -52,6 +53,11 @@ public class WpilibTools implements Plugin<Project> {
            transform.getTo().attribute(artifactType, DIRECTORY_TYPE);
         });
 
-        project.getExtensions().create("wpilibTools", WpilibToolsExtension.class, project, extractConfig, fixupTask, hashTask, assembleResourcesTask);        
+        project.getDependencies().registerTransform(UnzipTransform.class, (TransformSpec transform) -> {
+            transform.getFrom().attribute(artifactType, JAR_TYPE);
+            transform.getTo().attribute(artifactType, DIRECTORY_TYPE);
+         });
+
+        project.getExtensions().create("wpilibTools", WpilibToolsExtension.class, project, extractConfig, fixupTask, hashTask, assembleResourcesTask);
     }
 }

@@ -46,6 +46,32 @@ public class NativeConfigurator {
         return wpilib(handler, name, this.wpilibVersion);
     }
 
+    public Dependency wpilibConfig(DependencyHandler handler, String configurationName, String name) {
+        return wpilibConfig(handler, configurationName, name, this.wpilibVersion);
+    }
+
+    public Dependency wpilibConfig(DependencyHandler handler, String configurationName, String name, String version) {
+        return handler.add(configurationName,  "edu.wpi.first." + name + ":" + name + "-cpp:" + version + ":" + platformMapper.getWpilibClassifier() + "@zip");
+    }
+
+
+
+    public Dependency cscore(DependencyHandler handler, String version) {
+        NativePlatforms platform = platformMapper.getCurrentPlatform();
+        return handler.add(platform.getPlatformName() + "-wpilib",  "edu.wpi.first.cscore:cscore-jnicvstatic:" + version + ":" + platformMapper.getWpilibClassifier()  + "@zip");
+    }
+
+    public Dependency cscore(DependencyHandler handler) {
+        return cscore(handler, this.wpilibVersion);
+    }
+
+    public Dependency cscoreConfig(DependencyHandler handler, String configurationName) {
+        return cscoreConfig(handler, configurationName, this.wpilibVersion);
+    }
+
+    public Dependency cscoreConfig(DependencyHandler handler, String configurationName, String version) {
+        return handler.add(configurationName,  "edu.wpi.first.cscore:cscore-jnicvstatic:" + version + ":" + platformMapper.getWpilibClassifier() + "@zip");
+    }
 
     public Dependency javafx(DependencyHandler handler, String name, String version) {
         NativePlatforms platform = platformMapper.getCurrentPlatform();
@@ -53,9 +79,9 @@ public class NativeConfigurator {
         if (platform.equals(NativePlatforms.WIN32)) {
             groupName = "edu.wpi.first.openjfx";
         }
-        return handler.add(platform.getPlatformName(), 
+        return handler.add(platform.getPlatformName(),
             groupName + ":javafx-" + name + ":" + version + ":" + platformMapper.getJavaFxClassifier());
-    } 
+    }
 
     public Dependency javafx(DependencyHandler handler, String name) {
         return javafx(handler, name, defaultJavaFxVersion);
@@ -71,7 +97,7 @@ public class NativeConfigurator {
 
     // public static Dependency nativeDependency(DependencyHandler handler, String group, String name, String version, Function<NativePlatforms, String> classiferFunction) {
     //     NativePlatforms currentPlatform = PlatformMapper.getCurrentPlatform();
-    //     return handler.add(currentPlatform.getPlatformName(), 
+    //     return handler.add(currentPlatform.getPlatformName(),
     //         group + ":" + name + ":" + version + ":" + classiferFunction.apply(currentPlatform));
     // }
 }

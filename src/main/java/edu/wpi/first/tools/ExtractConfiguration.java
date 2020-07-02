@@ -1,5 +1,7 @@
 package edu.wpi.first.tools;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -46,6 +48,8 @@ public class ExtractConfiguration extends Copy {
 
     private DirectoryProperty outputDirectory;
 
+    private Set<Configuration> configurations;
+
     @OutputDirectory
     public DirectoryProperty getOutputDirectory() {
         return outputDirectory;
@@ -58,10 +62,13 @@ public class ExtractConfiguration extends Copy {
         return skipWindowsHelperLibrary;
     }
 
+    //@Input
+    public Set<Configuration> getConfigurations() {
+        return configurations;
+    }
+
     @Inject
     public ExtractConfiguration() {
-        WpilibToolsExtension extension = getProject().getExtensions().getByType(WpilibToolsExtension.class);
-
         outputDirectory = getProject().getObjects().directoryProperty();
 
         outputDirectory.set(getProject().getLayout().getBuildDirectory().dir("RawRuntimeLibs"));
@@ -69,6 +76,8 @@ public class ExtractConfiguration extends Copy {
         skipWindowsHelperLibrary = getProject().getObjects().property(Boolean.class);
 
         skipWindowsHelperLibrary.set(false);
+
+        configurations = new HashSet<>();
 
         getOutputs().dir(outputDirectory);
 
@@ -79,7 +88,7 @@ public class ExtractConfiguration extends Copy {
             @Override
             public FileCollection call() {
                 FileCollection collection = null;
-                for (Configuration config : extension.getConfigurations()) {
+                for (Configuration config : configurations) {
                     ArtifactView view = config.getIncoming().artifactView(viewAction);
                     FileCollection localCollection = view.getFiles();
                     if (collection == null) {
