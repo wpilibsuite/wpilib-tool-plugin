@@ -76,6 +76,14 @@ public class FixupNativeResources extends DefaultTask {
             List<String> filesToFixup = new ArrayList<>();
 
             for (File file : directory.getAsFileTree()) {
+                if (!file.isFile()) {
+                    continue;
+                }
+
+                // Strip binaries
+                project.exec((ex) -> {
+                    ex.commandLine("strip", "-x", "-S", file.toString());
+                });
 
                 // Get list of all dependent binaries
                 ByteArrayOutputStream standardOutput = new ByteArrayOutputStream();
