@@ -33,13 +33,11 @@ public class FixupNativeResources extends DefaultTask {
     public DirectoryProperty getOutputDirectory() {
         return outputDirectory;
     }
-
     @Inject
     public FixupNativeResources() {
         ObjectFactory factory = getProject().getObjects();
         inputDirectory = factory.directoryProperty();
         outputDirectory = factory.directoryProperty();
-        outputDirectory.set(getProject().getLayout().getBuildDirectory().dir("RuntimeLibs"));
     }
 
     @TaskAction

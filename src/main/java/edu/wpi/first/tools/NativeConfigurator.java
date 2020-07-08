@@ -1,9 +1,5 @@
 package edu.wpi.first.tools;
 
-import javax.inject.Inject;
-
-import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 
@@ -18,20 +14,6 @@ public class NativeConfigurator {
         this.platformMapper = mapper;
         this.handler = handler;
     }
-
-    // public Dependency add(DependencyHandler handler, NativePlatforms platform, Object dependencyNotation) {
-    //     return handler.add(platform.getPlatformName(), dependencyNotation);
-    // }
-
-    // public Configuration createNativeConfiguration(Project project) {
-    //     NativePlatforms currentPlatform = platformMapper.getCurrentPlatform();
-    //     Configuration configuration = project.getConfigurations().create(currentPlatform.getPlatformName());
-    //     Configuration wpilibConfiguration = project.getConfigurations().create(currentPlatform.getPlatformName() + "-wpilib");
-    //     project.getConfigurations().getByName("compileOnly").extendsFrom(configuration);
-    //     project.getConfigurations().getByName("runtimeOnly").extendsFrom(configuration);
-    //     project.getConfigurations().getByName("testCompile").extendsFrom(configuration);
-    //     return wpilibConfiguration;
-    // }
 
     public Dependency wpilibJava(String name) {
         return wpilibJava(name, wpilibVersion);

@@ -1,33 +1,34 @@
 package edu.wpi.first.tools;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
 import org.gradle.api.Action;
+import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.ArtifactView;
 import org.gradle.api.artifacts.ArtifactView.ViewConfiguration;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.AttributeContainer;
-import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.FileCopyDetails;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.os.OperatingSystem;
 
-public class ExtractConfiguration extends Copy {
+public class ExtractConfiguration extends DefaultTask {
     private final ArtifactViewAction viewAction = new ArtifactViewAction();
 
     private class AttributeContainerAction implements Action<AttributeContainer> {
@@ -49,6 +50,7 @@ public class ExtractConfiguration extends Copy {
     }
 
     private DirectoryProperty outputDirectory;
+    private RegularFileProperty versionsFile;
 
     private List<String> configurations;
 
@@ -69,71 +71,89 @@ public class ExtractConfiguration extends Copy {
         return configurations;
     }
 
+    @OutputFile
+    public RegularFileProperty getVersionsFile() {
+        return versionsFile;
+    }
+
+    private TaskProvider<Task> extractTask;
+
     @Inject
     public ExtractConfiguration() {
         outputDirectory = getProject().getObjects().directoryProperty();
-
-        outputDirectory.set(getProject().getLayout().getBuildDirectory().dir("RawRuntimeLibs"));
 
         skipWindowsHelperLibrary = getProject().getObjects().property(Boolean.class);
 
         skipWindowsHelperLibrary.set(false);
 
+        versionsFile = getProject().getObjects().fileProperty();
+
         configurations = new ArrayList<>();
 
-        getOutputs().dir(outputDirectory);
+        TaskProvider<Task> extractTask = getProject().getRootProject().getTasks()
+                .named("extractEmbeddedWindowsHelpers");
 
-        into(outputDirectory);
+        dependsOn(extractTask);
 
-        from(new Callable<FileCollection>() {
+        this.extractTask = extractTask;
+    }
 
-            @Override
-            public FileCollection call() {
-                FileCollection collection = null;
-                var cfgs = getProject().getConfigurations();
-                for (String config : configurations) {
-                    ArtifactView view = cfgs.getByName(config).getIncoming().artifactView(viewAction);
-                    FileCollection localCollection = view.getFiles();
-                    if (collection == null) {
-                        collection = localCollection;
-                    } else {
-                        collection = collection.plus(localCollection);
-                    }
-                }
-                return collection;
+    @TaskAction
+    public void execute() throws IOException {
+        FileCollection collection = null;
+        List<ArtifactView> views = new ArrayList<>();
+        var cfgs = getProject().getConfigurations();
+        for (String config : configurations) {
+            ArtifactView view = cfgs.getByName(config).getIncoming().artifactView(viewAction);
+            views.add(view);
+            FileCollection localCollection = view.getFiles();
+            if (collection == null) {
+                collection = localCollection;
+            } else {
+                collection = collection.plus(localCollection);
             }
+        }
 
+        FileCollection finalCollection = collection;
+
+        getProject().copy(spec -> {
+            spec.into(outputDirectory);
+            spec.from(finalCollection);
+
+
+            spec.include("**/*.so");
+            spec.include("**/*.so.*");
+            spec.include("**/*.dll");
+            spec.include("**/*.dylib");
+
+            spec.exclude("**/*.so.debug");
         });
 
-        if (OperatingSystem.current().isWindows()) {
-            TaskProvider<Task> extractTask = getProject().getRootProject().getTasks().named("extractEmbeddedWindowsHelpers");
+        if (OperatingSystem.current().isWindows() && !getSkipWindowsHelperLibrary().getOrElse(false)) {
 
-            dependsOn(extractTask);
             ExtractEmbeddedWindowsHelpers resolvedExtractTask = (ExtractEmbeddedWindowsHelpers)extractTask.get();
-            from(resolvedExtractTask.getOutputFile(), (CopySpec copy) -> {
-                String arch = "x86-64";
-                if (ExtractEmbeddedWindowsHelpers.is32BitIntel()) {
-                    arch = "x86";
-                }
-                copy.eachFile(new Action<FileCopyDetails>() {
-
-                    @Override
-                    public void execute(FileCopyDetails file) {
-                        if (getSkipWindowsHelperLibrary().getOrElse(false)) {
-                            file.exclude();
-                        }
+            getProject().copy(spec -> {
+                spec.from(resolvedExtractTask.getOutputFile(), copy -> {
+                    String arch = "x86-64";
+                    if (ExtractEmbeddedWindowsHelpers.is32BitIntel()) {
+                        arch = "x86";
                     }
-
+                    copy.into("/windows/" + arch + "/shared");
                 });
-                copy.into("/windows/" + arch + "/shared");
+                spec.into(outputDirectory);
             });
         }
 
-        include("**/*.so");
-        include("**/*.so.*");
-        include("**/*.dll");
-        include("**/*.dylib");
+        var versionFile = versionsFile.get().getAsFile();
+        List<String> versions = new ArrayList<>();
 
-        exclude("**/*.so.debug");
+        for (var view : views) {
+            var artifacts = view.getArtifacts();
+            for (var artifact : artifacts) {
+                versions.add(artifact.toString());
+            }
+        }
+
+        Files.write(versionFile.toPath(), versions, Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }

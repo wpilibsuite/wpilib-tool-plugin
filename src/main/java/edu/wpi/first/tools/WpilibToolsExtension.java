@@ -1,17 +1,13 @@
 package edu.wpi.first.tools;
 
-import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.gradle.api.Action;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
@@ -27,14 +23,6 @@ public class WpilibToolsExtension {
         this.platformMapper = new PlatformMapper();
         this.nativeConfigurator = new NativeConfigurator(platformMapper, project.getDependencies());
     }
-
-    // public void createNativeConfigurations() {
-    //     var cfg = nativeConfigurator.createNativeConfiguration(project);
-    //     this.extractConfigTask.configure(c -> {
-    //         c.getConfigurations().add(cfg);
-    //     });
-    // }
-
 
     public void addNativeResourcesToSourceSet(SourceSet sourceSet) {
 
@@ -90,6 +78,7 @@ public class WpilibToolsExtension {
                 c.getConfigurations().add(newConfig.configurationName);
             }
             c.getOutputDirectory().set(newConfig.rootTaskFolder.dir("RawRuntimeLibs"));
+            c.getVersionsFile().set(newConfig.rootTaskFolder.file("RuntimeLibVersions.txt"));
         });
 
         retSet.fixup = project.getTasks().register("fixupNativeResources" + newConfig.taskPostfix, FixupNativeResources.class);
@@ -102,8 +91,10 @@ public class WpilibToolsExtension {
         retSet.hash = project.getTasks().register("hashNativeResources" + newConfig.taskPostfix, HashNativeResources.class);
         retSet.hash.configure(c -> {
             c.dependsOn(retSet.fixup);
+            c.dependsOn(retSet.extractConfiguration);
             c.getInputDirectory().set(retSet.fixup.get().getOutputDirectory());
             c.getHashFile().set(newConfig.rootTaskFolder.file(newConfig.resourceFileName));
+            c.getVersionsInput().set(retSet.extractConfiguration.get().getVersionsFile());
         });
 
         retSet.assemble = project.getTasks().register("assembleNativeResources" + newConfig.taskPostfix, AssembleNativeResources.class);

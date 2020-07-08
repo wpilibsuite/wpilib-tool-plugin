@@ -9,12 +9,13 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import com.google.gson.GsonBuilder;
 
 import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 import org.gradle.api.DefaultTask;
@@ -23,14 +24,14 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-
-import com.google.gson.GsonBuilder;
 
 public class HashNativeResources extends DefaultTask {
     private final DirectoryProperty inputDirectory;
     private final RegularFileProperty hashFile;
+    private final RegularFileProperty versionsInput;
 
     @InputDirectory
     public DirectoryProperty getInputDirectory() {
@@ -42,12 +43,17 @@ public class HashNativeResources extends DefaultTask {
         return hashFile;
     }
 
+    @InputFile
+    public RegularFileProperty getVersionsInput() {
+        return versionsInput;
+    }
+
     @Inject
     public HashNativeResources() {
         ObjectFactory factory = getProject().getObjects();
         inputDirectory = factory.directoryProperty();
         hashFile = factory.fileProperty();
-        hashFile.set(getProject().getLayout().getBuildDirectory().file("ResourceInformation.json"));
+        versionsInput = factory.fileProperty();
     }
 
     @TaskAction
@@ -100,7 +106,10 @@ public class HashNativeResources extends DefaultTask {
             }
         }
 
+        var versions = Files.readAllLines(versionsInput.get().getAsFile().toPath());
+
         platforms.put("hash", EncodingGroovyMethods.encodeHex(hash.digest()).toString());
+        platforms.put("versions", versions);
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
         var json = builder.create().toJson(platforms);
