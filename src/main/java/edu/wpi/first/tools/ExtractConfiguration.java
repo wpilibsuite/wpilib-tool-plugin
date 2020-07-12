@@ -90,12 +90,14 @@ public class ExtractConfiguration extends DefaultTask {
 
         configurations = new ArrayList<>();
 
-        TaskProvider<Task> extractTask = getProject().getRootProject().getTasks()
-                .named("extractEmbeddedWindowsHelpers");
+        if (OperatingSystem.current().isWindows()) {
+            TaskProvider<Task> extractTask = getProject().getRootProject().getTasks()
+                    .named("extractEmbeddedWindowsHelpers");
 
-        dependsOn(extractTask);
+            dependsOn(extractTask);
+            this.extractTask = extractTask;
+        }
 
-        this.extractTask = extractTask;
     }
 
     @TaskAction
@@ -120,7 +122,6 @@ public class ExtractConfiguration extends DefaultTask {
             spec.into(outputDirectory);
             spec.from(finalCollection);
 
-
             spec.include("**/*.so");
             spec.include("**/*.so.*");
             spec.include("**/*.dll");
@@ -131,7 +132,7 @@ public class ExtractConfiguration extends DefaultTask {
 
         if (OperatingSystem.current().isWindows() && !getSkipWindowsHelperLibrary().getOrElse(false)) {
 
-            ExtractEmbeddedWindowsHelpers resolvedExtractTask = (ExtractEmbeddedWindowsHelpers)extractTask.get();
+            ExtractEmbeddedWindowsHelpers resolvedExtractTask = (ExtractEmbeddedWindowsHelpers) extractTask.get();
             getProject().copy(spec -> {
                 spec.from(resolvedExtractTask.getOutputFile(), copy -> {
                     String arch = "x86-64";
@@ -154,6 +155,7 @@ public class ExtractConfiguration extends DefaultTask {
             }
         }
 
-        Files.write(versionFile.toPath(), versions, Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        Files.write(versionFile.toPath(), versions, Charset.defaultCharset(), StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
