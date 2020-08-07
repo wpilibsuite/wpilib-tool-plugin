@@ -6,7 +6,10 @@ public enum NativePlatforms {
     WIN32("win32"),
     WIN64("win64"),
     MAC("mac64"),
-    LINUX("linux64");
+    LINUX64("linux64"),
+    LINUXAARCH("linuxaarch"),
+    LINUXRASPBIAN("linuxarm32"),
+    LINUXATHENA("linuxathena");
 
 
     private final String platformName;

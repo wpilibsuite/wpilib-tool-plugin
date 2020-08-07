@@ -20,7 +20,7 @@ public class WpilibToolsExtension {
     @Inject
     public WpilibToolsExtension(Project project) {
         this.project = project;
-        this.platformMapper = new PlatformMapper();
+        this.platformMapper = new PlatformMapper(project);
         this.nativeConfigurator = new NativeConfigurator(platformMapper, project.getDependencies());
     }
 
