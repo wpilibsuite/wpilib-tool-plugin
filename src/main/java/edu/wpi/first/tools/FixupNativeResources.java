@@ -126,7 +126,7 @@ public class FixupNativeResources extends DefaultTask {
 
                 // Overwrite signature because they were invalidated by strip and install-name-tool.
                 project.exec((ex) -> {
-                    ex.commandLine("sh", "-c", "codesign --force --strict --timestamp --options=runtime --sign - " + 
+                    ex.commandLine("sh", "-c", "codesign --force --sign - " + 
                                    file.toString());
                     ex.setStandardOutput(standardOutput);
                 });
