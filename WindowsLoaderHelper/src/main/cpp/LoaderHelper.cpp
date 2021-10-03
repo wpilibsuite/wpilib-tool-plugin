@@ -35,4 +35,16 @@ JNIEXPORT jstring JNICALL Java_edu_wpi_first_util_CombinedRuntimeLoader_setDllDi
     }
 }
 
+/*
+ * Class:     edu_wpi_first_wpiutil_WPIUtilJNI
+ * Method:    setDllDirectory
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_edu_wpi_first_wpiutil_CombinedRuntimeLoader_setDllDirectory
+(JNIEnv* env, jclass cls, jstring directory)
+{
+    // for backwards compatibility
+    return Java_edu_wpi_first_util_CombinedRuntimeLoader_setDllDirectory(env, cls, directory);
+}
+
 }

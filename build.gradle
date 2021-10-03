@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'edu.wpi.first'
-version '0.8.0'
+version '0.8.1'
 
 if (project.hasProperty('publishVersion')) {
     version = project.publishVersion
