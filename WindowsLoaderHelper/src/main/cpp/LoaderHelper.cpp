@@ -11,11 +11,11 @@ BOOL WINAPI DllEntryPoint(HINSTANCE hinstDLL, DWORD fdwReason,
 }
 
 /*
- * Class:     edu_wpi_first_wpiutil_WPIUtilJNI
+ * Class:     edu_wpi_first_util_WPIUtilJNI
  * Method:    setDllDirectory
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_edu_wpi_first_wpiutil_CombinedRuntimeLoader_setDllDirectory
+JNIEXPORT jstring JNICALL Java_edu_wpi_first_util_CombinedRuntimeLoader_setDllDirectory
 (JNIEnv* env, jclass cls, jstring directory)
 {
     WCHAR data[512];
