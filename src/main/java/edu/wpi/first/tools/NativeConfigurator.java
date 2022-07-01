@@ -6,7 +6,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 
 public class NativeConfigurator {
     private final PlatformMapper platformMapper;
-    private String defaultJavaFxVersion = "11";
+    private String defaultJavaFxVersion = "17";
     private String wpilibVersion = "+";
     private final DependencyHandler handler;
 
@@ -40,11 +40,7 @@ public class NativeConfigurator {
     }
 
     public Dependency javafx(String name, String version) {
-        NativePlatforms platform = platformMapper.getCurrentPlatform();
         String groupName = "org.openjfx";
-        if (platform.equals(NativePlatforms.WIN32)) {
-            groupName = "edu.wpi.first.openjfx";
-        }
         return handler.create(groupName + ":javafx-" + name + ":" + version + ":" + platformMapper.getJavaFxClassifier());
     }
 

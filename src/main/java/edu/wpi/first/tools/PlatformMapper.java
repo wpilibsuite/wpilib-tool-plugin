@@ -28,8 +28,6 @@ public class PlatformMapper {
             return currentPlatform;
         }
 
-        System.out.println("Old files");
-
         String osName = System.getProperty("os.name").toLowerCase();
         String os = "";
 
@@ -47,10 +45,14 @@ public class PlatformMapper {
         String arch = "";
 
         if(osArch.contains("x86_64") || osArch.contains("amd64")) {
-            arch = "64";
+            arch = "x64";
         } else if(osArch.contains("x86")) {
-            arch = "32";
-        } else {
+            arch = "x32";
+        } else if(osArch.contains("arm64") || osArch.contains("aarch64")) {
+            arch = "arm64";
+        } else if(osArch.contains("arm")) {
+            arch = "arm32";
+        }else {
             throw new UnsupportedOperationException(osArch);
         }
 
@@ -63,10 +65,11 @@ public class PlatformMapper {
         switch(platform) {
             case WIN32: return "windowsx86";
             case WIN64: return "windowsx86-64";
-            case MAC: return "osxx86-64";
+            case MAC64: return "osxx86-64";
+            case MACARM64: return "osxarm64";
             case LINUX64: return "linuxx86-64";
-            case LINUXAARCH: return "linuxaarch64bionic";
-            case LINUXRASPBIAN: return "linuxraspbian";
+            case LINUXARM64: return "linuxarm64";
+            case LINUXARM32: return "linuxarm32";
             case LINUXATHENA: return "linuxathena";
             default: throw new IllegalArgumentException();
         }
@@ -77,7 +80,8 @@ public class PlatformMapper {
         switch(platform) {
             case WIN32: return "windows-x86";
             case WIN64: return "windows-x86_64";
-            case MAC: return "macosx-x86_64";
+            case MAC64: return "macosx-x86_64";
+            case MACARM64: return "macosx-arm64";
             case LINUX64: return "linux-x86_64";
             default: throw new IllegalArgumentException();
         }
@@ -88,7 +92,8 @@ public class PlatformMapper {
         switch(platform) {
             case WIN32: return "win32";
             case WIN64: return "win";
-            case MAC: return "mac";
+            case MAC64: return "mac";
+            case MACARM64: return "mac-aarch64";
             case LINUX64: return "linux";
             default: throw new IllegalArgumentException();
         }

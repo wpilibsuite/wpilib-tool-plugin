@@ -3,11 +3,11 @@ import org.gradle.internal.os.OperatingSystem;
 plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
-    id "com.gradle.plugin-publish" version "0.12.0"
+    id "com.gradle.plugin-publish" version "1.0.0"
 }
 
 group 'edu.wpi.first'
-version '0.8.1'
+version '0.9.0'
 
 if (project.hasProperty('publishVersion')) {
     version = project.publishVersion
@@ -49,13 +49,6 @@ pluginBundle {
     vcsUrl = 'https://github.com/wpilibsuite/wpilib-tool-plugin'
     description = 'This plugin provides easy to use JNI support for gradle.'
     tags = ['groovy', 'jni', 'utils', 'maven', 'frc', 'wpilib']
-
-    plugins {
-        WpilibTools {
-            id = 'edu.wpi.first.WpilibTools'
-            displayName = 'WPILib Gradle Tool Plugin'
-        }
-    }
 }
 
 gradlePlugin {
@@ -63,10 +56,11 @@ gradlePlugin {
         WpilibTools {
             id = 'edu.wpi.first.WpilibTools'
             implementationClass = 'edu.wpi.first.tools.WpilibTools'
+            displayName = 'WPILib Gradle Tool Plugin'
         }
     }
 }
 
 wrapper {
-    gradleVersion = '6.0.1'
+    gradleVersion = '7.5-rc-3'
 }

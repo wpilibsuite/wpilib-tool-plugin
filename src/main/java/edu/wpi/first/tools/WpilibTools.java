@@ -1,5 +1,6 @@
 package edu.wpi.first.tools;
 
+import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE;
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.DIRECTORY_TYPE;
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.JAR_TYPE;
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ZIP_TYPE;
@@ -7,8 +8,6 @@ import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ZIP_TYPE;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.UnknownTaskException;
-import org.gradle.api.attributes.Attribute;
-import org.gradle.api.internal.artifacts.transform.UnzipTransform;
 import org.gradle.internal.os.OperatingSystem;
 
 public class WpilibTools implements Plugin<Project> {
@@ -23,16 +22,14 @@ public class WpilibTools implements Plugin<Project> {
             }
         }
 
-        Attribute<String> artifactType = Attribute.of("artifactType", String.class);
-
         project.getDependencies().registerTransform(UnzipTransform.class, transform -> {
-           transform.getFrom().attribute(artifactType, ZIP_TYPE);
-           transform.getTo().attribute(artifactType, DIRECTORY_TYPE);
+           transform.getFrom().attribute(ARTIFACT_TYPE_ATTRIBUTE, ZIP_TYPE);
+           transform.getTo().attribute(ARTIFACT_TYPE_ATTRIBUTE, DIRECTORY_TYPE);
         });
 
         project.getDependencies().registerTransform(UnzipTransform.class, transform -> {
-            transform.getFrom().attribute(artifactType, JAR_TYPE);
-            transform.getTo().attribute(artifactType, DIRECTORY_TYPE);
+            transform.getFrom().attribute(ARTIFACT_TYPE_ATTRIBUTE, JAR_TYPE);
+            transform.getTo().attribute(ARTIFACT_TYPE_ATTRIBUTE, DIRECTORY_TYPE);
          });
 
         project.getExtensions().create("wpilibTools", WpilibToolsExtension.class, project);

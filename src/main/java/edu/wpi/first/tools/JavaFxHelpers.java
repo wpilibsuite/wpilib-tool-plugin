@@ -14,12 +14,9 @@ public class JavaFxHelpers {
     public Dependency add(DependencyHandler handler, String name, String version) {
         NativePlatforms platform = platformMapper.getCurrentPlatform();
         String groupName = "org.openjfx";
-        if (platform.equals(NativePlatforms.WIN32)) {
-            groupName = "edu.wpi.first.openjfx";
-        }
-        return handler.add(platform.getPlatformName(), 
+        return handler.add(platform.getPlatformName(),
             groupName + ":javafx-" + name + ":" + version + ":" + platformMapper.getJavaFxClassifier());
-    } 
+    }
 
     public Dependency add(DependencyHandler handler, String name) {
         return add(handler, name, defaultVersion);
