@@ -81,7 +81,7 @@ public class PlatformMapper {
             case WIN32: return "windows-x86";
             case WIN64: return "windows-x86_64";
             case MAC64: return "macosx-x86_64";
-            case MACARM64: return "macosx-aarch64";
+            case MACARM64: return "macosx-arm64";
             case LINUX64: return "linux-x86_64";
             default: throw new IllegalArgumentException();
         }
