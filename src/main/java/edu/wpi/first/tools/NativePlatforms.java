@@ -3,12 +3,13 @@ package edu.wpi.first.tools;
 import java.util.NoSuchElementException;
 
 public enum NativePlatforms {
-    WIN32("win32"),
-    WIN64("win64"),
-    MAC("mac64"),
-    LINUX64("linux64"),
-    LINUXAARCH("linuxaarch"),
-    LINUXRASPBIAN("linuxarm32"),
+    WIN32("winx32"),
+    WIN64("winx64"),
+    MAC64("macx64"),
+    MACARM64("macarm64"),
+    LINUX64("linuxx64"),
+    LINUXARM64("linuxarm64"),
+    LINUXARM32("linuxarm32"),
     LINUXATHENA("linuxathena");
 
 
