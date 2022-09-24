@@ -21,9 +21,8 @@ public class PlatformMapper {
 
         Object override = project.findProperty("ArchOverride");
 
-        System.out.println(override);
-
         if (override != null) {
+            System.out.println("Overwriting platform to " + override);
             currentPlatform = NativePlatforms.forName((String)override);
             return currentPlatform;
         }
