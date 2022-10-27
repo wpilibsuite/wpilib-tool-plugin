@@ -24,10 +24,6 @@ public class WpilibToolsExtension {
         this.nativeConfigurator = new NativeConfigurator(platformMapper, project.getDependencies());
     }
 
-    public void addNativeResourcesToSourceSet(SourceSet sourceSet) {
-
-    }
-
     public PlatformMapper getPlatformMapper() {
         return platformMapper;
     }
