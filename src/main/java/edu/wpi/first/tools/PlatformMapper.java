@@ -82,6 +82,8 @@ public class PlatformMapper {
             case MAC64: return "macosx-x86_64";
             case MACARM64: return "macosx-arm64";
             case LINUX64: return "linux-x86_64";
+            case LINUXARM64: return "linux-arm64";
+            case LINUXARM32: return "linux-armhf";
             default: throw new IllegalArgumentException();
         }
     }
@@ -94,6 +96,8 @@ public class PlatformMapper {
             case MAC64: return "mac";
             case MACARM64: return "mac-aarch64";
             case LINUX64: return "linux";
+            case LINUXARM64: return "linux-aarch64";
+            case LINUXARM32: return "linux-arm32-monocle";
             default: throw new IllegalArgumentException();
         }
     }

@@ -55,6 +55,34 @@ public class FixupNativeResources extends DefaultTask {
         });
 
         if (OperatingSystem.current().isLinux()) {
+            NativePlatforms currentPlat = getProject().getExtensions().getByType(WpilibToolsExtension.class).getCurrentPlatform();
+            String stripCommand = "strip";
+            if (currentPlat.equals(NativePlatforms.LINUXARM32)) {
+                String localStripCommand = "armv6-bullseye-linux-gnueabihf-strip";
+                try {
+                    project.exec(ex -> {
+                        ex.commandLine(localStripCommand);
+                    });
+                } catch (Exception ex) {
+                    getLogger().warn("Strip for arm32 was not found. Skipping");
+                    return;
+                }
+                stripCommand = localStripCommand;
+            } else if (currentPlat.equals(NativePlatforms.LINUXARM64)) {
+                String localStripCommand = "aarch64-bullseye-linux-gnu-strip";
+                try {
+                    project.exec(ex -> {
+                        ex.commandLine(localStripCommand);
+                    });
+                } catch (Exception ex) {
+                    getLogger().warn("Strip for arm64 was not found. Skipping");
+                    return;
+                }
+                stripCommand = localStripCommand;
+            }
+
+            String fStripCommand = stripCommand;
+
             // Strip all binaries
             Directory directory = outputDirectory.get();
             for (File file : directory.getAsFileTree()) {
@@ -62,7 +90,7 @@ public class FixupNativeResources extends DefaultTask {
                     continue;
                 }
                 project.exec((ex) -> {
-                    ex.commandLine("strip", "--strip-all", "--discard-all", file.toString());
+                    ex.commandLine(fStripCommand, "--strip-all", "--discard-all", file.toString());
                 });
             }
         }
