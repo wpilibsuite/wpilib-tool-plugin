@@ -87,6 +87,7 @@ public class HashNativeResources extends DefaultTask {
 
             String strPath = "/" + path.toString().replace("\\", "/");
 
+            @SuppressWarnings("unchecked") // This will always be the correct type
             Map<String, List<String>> platformMap = (Map<String, List<String>>)platforms.get(platform);
             if (platformMap == null) {
                 platformMap = new HashMap<>();
