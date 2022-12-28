@@ -71,7 +71,7 @@ public class WpilibToolsExtension {
         retSet.extractConfiguration = project.getTasks().register("extractNativeConfiguration" + newConfig.taskPostfix, ExtractConfiguration.class);
         retSet.extractConfiguration.configure(c -> {
             if (newConfig.configurationName != null) {
-                c.getConfigurations().add(newConfig.configurationName);
+                c.addConfigurationToView(newConfig.configurationName);
             }
             c.getOutputDirectory().set(newConfig.rootTaskFolder.dir("RawRuntimeLibs"));
             c.getVersionsFile().set(newConfig.rootTaskFolder.file("RuntimeLibVersions.txt"));

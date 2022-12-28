@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -16,11 +17,14 @@ import org.gradle.api.artifacts.ArtifactView;
 import org.gradle.api.artifacts.ArtifactView.ViewConfiguration;
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.AttributeContainer;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
@@ -48,26 +52,32 @@ public class ExtractConfiguration extends DefaultTask {
         }
     }
 
-    private DirectoryProperty outputDirectory;
-    private RegularFileProperty versionsFile;
+    private final DirectoryProperty outputDirectory;
+    private final RegularFileProperty versionsFile;
 
-    private List<String> configurations;
+    private final ConfigurableFileCollection configurations;
+    private final List<ArtifactView> views;
 
     @OutputDirectory
     public DirectoryProperty getOutputDirectory() {
         return outputDirectory;
     }
 
-    private Property<Boolean> skipWindowsHelperLibrary;
+    private final Property<Boolean> skipWindowsHelperLibrary;
 
     @Input
     public Property<Boolean> getSkipWindowsHelperLibrary() {
         return skipWindowsHelperLibrary;
     }
 
-    @Input
-    public List<String> getConfigurations() {
+    @InputFiles
+    public ConfigurableFileCollection getConfigurationFiles() {
         return configurations;
+    }
+
+    @Internal
+    public List<ArtifactView> getViews() {
+        return views;
     }
 
     @OutputFile
@@ -87,7 +97,9 @@ public class ExtractConfiguration extends DefaultTask {
 
         versionsFile = getProject().getObjects().fileProperty();
 
-        configurations = new ArrayList<>();
+        configurations = getProject().getObjects().fileCollection();
+
+        views = new ArrayList<>();
 
         if (OperatingSystem.current().isWindows()) {
             TaskProvider<Task> extractTask = getProject().getRootProject().getTasks()
@@ -99,27 +111,20 @@ public class ExtractConfiguration extends DefaultTask {
 
     }
 
+    public void addConfigurationToView(String configurationName) {
+        var cfgs = getProject().getConfigurations();
+        var view = cfgs.getByName(configurationName).getIncoming().artifactView(viewAction);
+        getViews().add(view);
+        Callable<FileCollection> cbl = () -> view.getFiles();
+        getConfigurationFiles().from(getProject().files(cbl));
+    }
+
     @TaskAction
     public void execute() throws IOException {
-        FileCollection collection = null;
-        List<ArtifactView> views = new ArrayList<>();
-        var cfgs = getProject().getConfigurations();
-        for (String config : configurations) {
-            ArtifactView view = cfgs.getByName(config).getIncoming().artifactView(viewAction);
-            views.add(view);
-            FileCollection localCollection = view.getFiles();
-            if (collection == null) {
-                collection = localCollection;
-            } else {
-                collection = collection.plus(localCollection);
-            }
-        }
-
-        FileCollection finalCollection = collection;
 
         getProject().copy(spec -> {
             spec.into(outputDirectory);
-            spec.from(finalCollection);
+            spec.from(configurations);
 
             spec.include("**/*.so");
             spec.include("**/*.so.*");

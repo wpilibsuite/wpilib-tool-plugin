@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'edu.wpi.first'
-version '1.0.0'
+version '1.1.0'
 
 if (project.hasProperty('publishVersion')) {
     version = project.publishVersion
@@ -59,6 +59,15 @@ gradlePlugin {
             displayName = 'WPILib Gradle Tool Plugin'
         }
     }
+}
+
+tasks.withType(Javadoc) {
+    options.addBooleanOption('Xdoclint:all,-missing', true)
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked'
+    options.deprecation = true
 }
 
 wrapper {
