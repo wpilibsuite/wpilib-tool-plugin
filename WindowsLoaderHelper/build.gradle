@@ -8,6 +8,7 @@ String extra = base.concat("/win32").toString()
 
 
 library {
+    targetMachines.add(machines.windows.architecture('aarch64'))
     targetMachines.add(machines.windows.x86_64)
     targetMachines.add(machines.windows.x86)
 
