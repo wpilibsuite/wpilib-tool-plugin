@@ -3,11 +3,11 @@ import org.gradle.internal.os.OperatingSystem;
 plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
-    id "com.gradle.plugin-publish" version "1.0.0"
+    id "com.gradle.plugin-publish" version "1.2.1"
 }
 
 group 'edu.wpi.first'
-version '1.1.0'
+version '1.2.0'
 
 if (project.hasProperty('publishVersion')) {
     version = project.publishVersion
@@ -31,6 +31,10 @@ if (OperatingSystem.current().isWindows()) {
         into "$buildDir/assembledResources"
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
+        from (project(":WindowsLoaderHelper").tasks.named("linkReleaseAarch64")) {
+            include "**/*.dll"
+            into "/arm64"
+        }
         from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86")) {
             include "**/*.dll"
             into "/x86"
@@ -44,19 +48,17 @@ if (OperatingSystem.current().isWindows()) {
     sourceSets.main.output.dir generateNativeResources, builtBy: generateNativeResources
 }
 
-pluginBundle {
+gradlePlugin {
     website = 'https://github.com/wpilibsuite/wpilib-tool-plugin'
     vcsUrl = 'https://github.com/wpilibsuite/wpilib-tool-plugin'
-    description = 'This plugin provides easy to use JNI support for gradle.'
-    tags = ['groovy', 'jni', 'utils', 'maven', 'frc', 'wpilib']
-}
 
-gradlePlugin {
     plugins {
         WpilibTools {
             id = 'edu.wpi.first.WpilibTools'
             implementationClass = 'edu.wpi.first.tools.WpilibTools'
             displayName = 'WPILib Gradle Tool Plugin'
+            description = 'This plugin provides easy to use JNI support for gradle.'
+            tags = ['groovy', 'jni', 'utils', 'maven', 'frc', 'wpilib']
         }
     }
 }
@@ -71,5 +73,5 @@ tasks.withType(JavaCompile) {
 }
 
 wrapper {
-    gradleVersion = '7.5.1'
+    gradleVersion = '8.4'
 }

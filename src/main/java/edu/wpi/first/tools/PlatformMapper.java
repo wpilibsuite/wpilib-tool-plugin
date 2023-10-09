@@ -64,6 +64,7 @@ public class PlatformMapper {
         switch(platform) {
             case WIN32: return "windowsx86";
             case WIN64: return "windowsx86-64";
+            case WINARM64: return "windowsarm64";
             case MAC64: return "osxuniversal";
             case MACARM64: return "osxuniversal";
             case LINUX64: return "linuxx86-64";

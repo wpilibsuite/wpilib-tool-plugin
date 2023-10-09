@@ -37,6 +37,11 @@ public class ExtractEmbeddedWindowsHelpers extends DefaultTask {
         return "x86".equals(arch) || "i386".equals(arch);
     }
 
+    public static boolean isArm64() {
+        String arch = System.getProperty("os.arch");
+        return "arm64".equals(arch) || "aarch64".equals(arch);
+    }
+
     @TaskAction
     public void extract() throws IOException {
         File resolvedFile = outputFile.getAsFile().get();
@@ -44,6 +49,8 @@ public class ExtractEmbeddedWindowsHelpers extends DefaultTask {
         String streamFileName = "/x86-64/WindowsLoaderHelper.dll";
         if (is32BitIntel()) {
             streamFileName = "/x86/WindowsLoaderHelper.dll";
+        } else if (isArm64()) {
+            streamFileName = "/arm64/WindowsLoaderHelper.dll";
         }
 
         try (InputStream is = ExtractEmbeddedWindowsHelpers.class.getResourceAsStream(streamFileName)) {
