@@ -146,8 +146,14 @@ public class FixupNativeResources extends DefaultTask {
 
                 // Fixup any dependencies
                 for (String fixupFile : filesToFixup) {
+                    String outputName = fixupFile;
+                    // Handle the special case of opencv libraries already containing rpath
+                    if (outputName.startsWith("@rpath/")) {
+                        outputName = outputName.substring("@rpath/".length());
+                    }
+                    String outputNameFinal = outputName;
                     project.exec((ex) -> {
-                        ex.commandLine("install_name_tool", "-change", fixupFile, "@loader_path/" + fixupFile,
+                        ex.commandLine("install_name_tool", "-change", fixupFile, "@loader_path/" + outputNameFinal,
                                 file.toString());
                     });
                 }
