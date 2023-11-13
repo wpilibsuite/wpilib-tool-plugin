@@ -14,6 +14,11 @@ public class NativeConfigurator {
         this.handler = handler;
     }
 
+    public Dependency wpilibApriltaglib(String frcYear, String version) {
+        return handler.create("edu.wpi.first.thirdparty." + frcYear + ".apriltaglib:" + version + ":"
+                + platformMapper.getWpilibClassifier() + "@zip");
+    }   
+
     public Dependency wpilibOpenCvJava(String frcYear, String version) {
         return handler.create("edu.wpi.first.thirdparty." + frcYear + ".opencv:opencv-java:" + version);
     }
