@@ -102,7 +102,7 @@ public class ExtractConfiguration extends DefaultTask {
         views = new ArrayList<>();
 
         if (OperatingSystem.current().isWindows()) {
-            TaskProvider<Task> extractTask = getProject().getRootProject().getTasks()
+            TaskProvider<Task> extractTask = getProject().getTasks()
                     .named("extractEmbeddedWindowsHelpers");
 
             dependsOn(extractTask);

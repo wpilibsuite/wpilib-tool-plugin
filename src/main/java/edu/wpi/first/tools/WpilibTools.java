@@ -16,9 +16,9 @@ public class WpilibTools implements Plugin<Project> {
         if (OperatingSystem.current().isWindows()) {
             var extractTaskName = "extractEmbeddedWindowsHelpers";
             try {
-                project.getRootProject().getTasks().named(extractTaskName);
+                project.getTasks().named(extractTaskName);
             } catch (UnknownTaskException notfound) {
-                project.getRootProject().getTasks().register(extractTaskName, ExtractEmbeddedWindowsHelpers.class);
+                project.getTasks().register(extractTaskName, ExtractEmbeddedWindowsHelpers.class);
             }
         }
 
