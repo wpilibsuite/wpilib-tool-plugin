@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'edu.wpi.first'
-version '1.3.0'
+version '2.0.0'
 
 if (project.hasProperty('publishVersion')) {
     version = project.publishVersion
@@ -24,28 +24,6 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-}
-
-if (OperatingSystem.current().isWindows()) {
-    def generateNativeResources = tasks.register("generateNativeResources", Copy) {
-        into "$buildDir/assembledResources"
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-        from (project(":WindowsLoaderHelper").tasks.named("linkReleaseAarch64")) {
-            include "**/*.dll"
-            into "/arm64"
-        }
-        from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86")) {
-            include "**/*.dll"
-            into "/x86"
-        }
-        from (project(":WindowsLoaderHelper").tasks.named("linkReleaseX86-64")) {
-            include "**/*.dll"
-            into "/x86-64"
-        }
-    }
-
-    sourceSets.main.output.dir generateNativeResources, builtBy: generateNativeResources
 }
 
 gradlePlugin {
@@ -73,5 +51,5 @@ tasks.withType(JavaCompile) {
 }
 
 wrapper {
-    gradleVersion = '8.4'
+    gradleVersion = '8.10.2'
 }

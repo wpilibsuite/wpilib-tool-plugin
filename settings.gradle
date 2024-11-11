@@ -1,7 +1,0 @@
-import org.gradle.internal.os.OperatingSystem;
-
-if (OperatingSystem.current().isWindows()) {
-    include 'WindowsLoaderHelper'
-}
-
-
