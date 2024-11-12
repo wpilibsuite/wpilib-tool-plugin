@@ -148,9 +148,7 @@ public class FixupNativeResources extends DefaultTask {
                 for (String fixupFile : filesToFixup) {
                     String outputName = fixupFile;
                     // Handle the special case of opencv libraries already containing rpath
-                    System.out.println(outputName);
                     if (outputName.startsWith("@rpath/")) {
-                        System.out.println("Replaciong");
                         outputName = outputName.substring("@rpath/".length());
                     }
                     String outputNameFinal = outputName;
