@@ -6,6 +6,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 public class NativeConfigurator {
     private final PlatformMapper platformMapper;
     private String defaultJavaFxVersion = "17.0.13";
+    private String defaultJavaFxVersionArm = "17.0.8";
     private String wpilibVersion = "+";
     private final DependencyHandler handler;
 
@@ -56,7 +57,8 @@ public class NativeConfigurator {
     }
 
     public Dependency javafx(String name) {
-        return javafx(name, defaultJavaFxVersion);
+        String javafxVersion = platformMapper.isPlatformArm() ? defaultJavaFxVersionArm : defaultJavaFxVersion;
+        return javafx(name, javafxVersion);
     }
 
     public void setDefaultJavaFxVersion(String version) {
